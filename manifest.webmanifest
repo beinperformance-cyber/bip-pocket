@@ -1,6 +1,6 @@
 {
-  "name": "BIP Pocket",
-  "short_name": "BIP Pocket",
+  "name": "Mon application BIP",
+  "short_name": "BIP",
   "description": "Mini application pédagogique BIP.",
   "start_url": "./",
   "scope": "./",
