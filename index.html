@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#132238">
+  <meta name="description" content="Mini application BIP installable sur smartphone.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>BIP Pocket</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --primary: #132238;
+      --accent: #16a085;
+      --text: #17202a;
+      --muted: #65758b;
+      --border: #dfe7ef;
+      --danger: #b23b3b;
+      --shadow: 0 10px 28px rgba(19, 34, 56, .10);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(22, 160, 133, .12), transparent 34%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    main {
+      width: min(100%, 620px);
+      margin: 0 auto;
+      padding: 18px 16px calc(32px + env(safe-area-inset-bottom));
+    }
+
+    header {
+      color: white;
+      background: linear-gradient(135deg, var(--primary), #28496e);
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    h1, h2, p { margin-top: 0; }
+    h1 { margin-bottom: 6px; font-size: 1.8rem; }
+    h2 { font-size: 1.05rem; margin-bottom: 14px; }
+
+    .subtitle, .muted { color: var(--muted); }
+    header .subtitle { color: rgba(255,255,255,.78); margin-bottom: 18px; }
+
+    .status-row, .stats, .actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .status-row { grid-template-columns: 1fr auto; align-items: center; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.13);
+      font-size: .86rem;
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #82e0aa;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 17px;
+      margin-top: 14px;
+      box-shadow: 0 7px 22px rgba(19,34,56,.06);
+    }
+
+    .stats { grid-template-columns: repeat(3, 1fr); }
+
+    .stat {
+      text-align: center;
+      padding: 12px 8px;
+      border-radius: 14px;
+      background: #f7fafc;
+      border: 1px solid var(--border);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.3rem;
+      color: var(--primary);
+    }
+
+    .stat span { font-size: .78rem; color: var(--muted); }
+
+    .actions { grid-template-columns: repeat(2, 1fr); }
+
+    button {
+      min-height: 52px;
+      border: 0;
+      border-radius: 14px;
+      padding: 12px;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+      transition: transform .08s ease, opacity .2s ease;
+    }
+
+    button:active { transform: scale(.98); }
+
+    .primary { background: var(--accent); color: white; }
+    .secondary { background: #eaf0f6; color: var(--primary); }
+    .danger { background: #faecec; color: var(--danger); }
+
+    .timer {
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+      color: var(--primary);
+      margin: 8px 0 14px;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    input {
+      width: 100%;
+      min-height: 48px;
+      padding: 11px 13px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font: inherit;
+      background: white;
+    }
+
+    input:focus {
+      outline: 3px solid rgba(22,160,133,.18);
+      border-color: var(--accent);
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 11px 12px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    li button {
+      min-height: 34px;
+      padding: 5px 9px;
+      margin-left: auto;
+      font-size: .8rem;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-style: italic;
+      padding: 10px 0;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: .78rem;
+      margin-top: 18px;
+    }
+
+    @media (max-width: 390px) {
+      .actions { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>BIP Pocket</h1>
+      <p class="subtitle">Un petit tableau de bord pour comprendre le fonctionnement d'une application mobile.</p>
+      <div class="status-row">
+        <strong id="dateTime">Chargement…</strong>
+        <span class="pill"><span class="dot" id="networkDot"></span><span id="networkStatus">En ligne</span></span>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>Vue rapide</h2>
+      <div class="stats">
+        <div class="stat"><strong id="ideaCount">0</strong><span>idées</span></div>
+        <div class="stat"><strong id="taskCount">0</strong><span>tâches</span></div>
+        <div class="stat"><strong id="sessionCount">0</strong><span>sessions</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Chronomètre de concentration</h2>
+      <div class="timer" id="timer">00:00:00</div>
+      <div class="actions">
+        <button class="primary" id="toggleTimer">Démarrer</button>
+        <button class="secondary" id="resetTimer">Remettre à zéro</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Idées rapides</h2>
+      <form id="ideaForm">
+        <input id="ideaInput" maxlength="120" placeholder="Ex. Améliorer le suivi d'un stage" required>
+        <button class="primary" type="submit">Ajouter</button>
+      </form>
+      <ul id="ideaList"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Tâches du moment</h2>
+      <form id="taskForm">
+        <input id="taskInput" maxlength="120" placeholder="Ex. Appeler un parent" required>
+        <button class="primary" type="submit">Ajouter</button>
+      </form>
+      <ul id="taskList"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Gestion des données</h2>
+      <p class="muted">Les données restent uniquement dans le navigateur de cet appareil.</p>
+      <button class="danger" id="clearAll">Effacer toutes les données</button>
+    </section>
+
+    <footer>Prototype pédagogique — BIP · Be In Performance</footer>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "bip-pocket-v1";
+    const initialState = { ideas: [], tasks: [], elapsed: 0, sessions: 0 };
+    let state = loadState();
+    let timerInterval = null;
+    let timerStartedAt = null;
+
+    function loadState() {
+      try {
+        return { ...initialState, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };
+      } catch {
+        return { ...initialState };
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      render();
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      })[char]);
+    }
+
+    function formatDuration(totalSeconds) {
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      return [hours, minutes, seconds].map(value => String(value).padStart(2, "0")).join(":");
+    }
+
+    function currentElapsed() {
+      if (!timerStartedAt) return state.elapsed;
+      return state.elapsed + Math.floor((Date.now() - timerStartedAt) / 1000);
+    }
+
+    function renderList(items, elementId, type) {
+      const list = document.getElementById(elementId);
+      if (!items.length) {
+        list.innerHTML = '<li class="empty">Rien pour le moment.</li>';
+        return;
+      }
+      list.innerHTML = items.map((item, index) => `
+        <li>
+          <span>${escapeHtml(item)}</span>
+          <button class="danger" data-type="${type}" data-index="${index}">Supprimer</button>
+        </li>
+      `).join("");
+    }
+
+    function render() {
+      document.getElementById("ideaCount").textContent = state.ideas.length;
+      document.getElementById("taskCount").textContent = state.tasks.length;
+      document.getElementById("sessionCount").textContent = state.sessions;
+      document.getElementById("timer").textContent = formatDuration(currentElapsed());
+      renderList(state.ideas, "ideaList", "ideas");
+      renderList(state.tasks, "taskList", "tasks");
+    }
+
+    function addItem(type, inputId) {
+      const input = document.getElementById(inputId);
+      const value = input.value.trim();
+      if (!value) return;
+      state[type].unshift(value);
+      input.value = "";
+      saveState();
+    }
+
+    document.getElementById("ideaForm").addEventListener("submit", event => {
+      event.preventDefault();
+      addItem("ideas", "ideaInput");
+    });
+
+    document.getElementById("taskForm").addEventListener("submit", event => {
+      event.preventDefault();
+      addItem("tasks", "taskInput");
+    });
+
+    document.addEventListener("click", event => {
+      const button = event.target.closest("[data-type][data-index]");
+      if (!button) return;
+      state[button.dataset.type].splice(Number(button.dataset.index), 1);
+      saveState();
+    });
+
+    document.getElementById("toggleTimer").addEventListener("click", () => {
+      const button = document.getElementById("toggleTimer");
+      if (timerStartedAt) {
+        state.elapsed = currentElapsed();
+        timerStartedAt = null;
+        clearInterval(timerInterval);
+        timerInterval = null;
+        state.sessions += 1;
+        button.textContent = "Démarrer";
+        saveState();
+      } else {
+        timerStartedAt = Date.now();
+        timerInterval = setInterval(render, 1000);
+        button.textContent = "Pause";
+        render();
+      }
+    });
+
+    document.getElementById("resetTimer").addEventListener("click", () => {
+      timerStartedAt = null;
+      clearInterval(timerInterval);
+      timerInterval = null;
+      state.elapsed = 0;
+      document.getElementById("toggleTimer").textContent = "Démarrer";
+      saveState();
+    });
+
+    document.getElementById("clearAll").addEventListener("click", () => {
+      if (!confirm("Effacer toutes les idées, tâches et données du chronomètre ?")) return;
+      state = { ...initialState };
+      timerStartedAt = null;
+      clearInterval(timerInterval);
+      timerInterval = null;
+      document.getElementById("toggleTimer").textContent = "Démarrer";
+      saveState();
+    });
+
+    function updateDateTime() {
+      const now = new Date();
+      document.getElementById("dateTime").textContent = new Intl.DateTimeFormat("fr-BE", {
+        weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit"
+      }).format(now);
+    }
+
+    function updateNetwork() {
+      const online = navigator.onLine;
+      document.getElementById("networkStatus").textContent = online ? "En ligne" : "Hors ligne";
+      document.getElementById("networkDot").style.background = online ? "#82e0aa" : "#f5b041";
+    }
+
+    window.addEventListener("online", updateNetwork);
+    window.addEventListener("offline", updateNetwork);
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
+    }
+
+    updateDateTime();
+    updateNetwork();
+    render();
+    setInterval(updateDateTime, 30000);
+  </script>
+</body>
+</html>
